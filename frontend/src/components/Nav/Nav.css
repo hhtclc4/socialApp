@@ -1,0 +1,16 @@
+.nav-container {
+    height: 80px;
+    width: 100%;
+    padding-left: 1%;
+    border-bottom: 1px solid black;
+    background-color: white;
+}
+.nav-container .nav-btn-group {
+    padding-right: 5%;
+}
+.user-img {
+    padding-top: 5px;
+    height: 70px;
+    width: 70px;
+    border-radius: 50%;
+}

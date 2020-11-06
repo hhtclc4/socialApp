@@ -1,0 +1,131 @@
+$heightBtn: 40px;
+$border-color: #d9d9d9;
+$concept-color: #1877f2;
+@function takehalf($height) {
+    @return $height/2;
+}
+
+.post-cr-container {
+    min-width: 500px;
+    min-height: 100px;
+    background-color: white;
+    border: none;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+    .post-cr-user {
+        img {
+            height: 40px;
+            width: 40px;
+        }
+    }
+    .post-cr-btn {
+        height: $heightBtn;
+        border: none;
+        border-radius: takehalf($heightBtn);
+        font-size: 14px;
+        color: #737373;
+        outline: none;
+        background-color: #f2f2f2;
+        &:hover {
+            background-color: #e6e6e6;
+        }
+    }
+
+    .post-cr-hear {
+        border-bottom: 1px solid $border-color;
+    }
+    .post-cr-body {
+        .post-cr-text-editor {
+            textarea {
+                width: 100%;
+                border: none;
+                outline: none;
+                font-size: 20px;
+                background-repeat: no-repeat;
+                background-size: auto;
+            }
+        }
+        .post-cr-img-show {
+            max-height: 45vh;
+            overflow: auto;
+            position: relative;
+            .img-close-btn {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                border: 2px solid $border-color;
+                background-color: transparent;
+                padding: 7px 12px;
+                border-radius: 50%;
+                color: #8c8c8c;
+                outline: none;
+                &:hover {
+                    background-color: #f2f2f2;
+                }
+            }
+            img {
+                width: 100%;
+            }
+            /* width */
+            &::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            /* Track */
+            &::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+
+            /* Handle */
+            &::-webkit-scrollbar-thumb {
+                background: #888;
+            }
+
+            /* Handle on hover */
+            &::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+        }
+
+        .post-cr-actions {
+            .post-cr-add-theme {
+                .collapse-btn {
+                    border: none;
+                    border-radius: 5px;
+                    padding: 0 10px;
+                    background-color: #d9d9d9;
+                    &:hover {
+                        background-color: #bfbfbf;
+                    }
+                }
+                img {
+                    height: 30px;
+                    width: 30px;
+                    cursor: pointer;
+                    // border: 2px solid #ccc;
+                    // border-radius: 3px;
+                }
+                .post-cr-themes-list {
+                    transition: all 0.5 ease;
+                    .theme-thumb {
+                        height: 30px;
+                        width: 30px;
+                        margin: 0 5px;
+                        border-radius: 5px;
+                    }
+                }
+            }
+            .post-cr-add-img {
+                cursor: pointer;
+            }
+        }
+    }
+    .post-cr-footer {
+        .post-cr-post-btn {
+            border: none;
+            background-color: $concept-color;
+            color: white;
+            border-radius: 5px;
+            width: 100%;
+        }
+    }
+}

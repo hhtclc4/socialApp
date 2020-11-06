@@ -1,0 +1,20 @@
+html,
+body,
+#root {
+    min-height: 100vh;
+    height: fit-content;
+    font-family: "QuickSand";
+    margin: 0;
+}
+
+.modal-back-drop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 15;
+    overflow: hidden;
+    transition: all 0.4s ease-in-out;
+}
