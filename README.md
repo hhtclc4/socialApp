@@ -7,5 +7,5 @@ Apollo Graphql
 ReactJs
 
 Feature: 
-Authenticate User by token
+Authenticate User by token,
 Create Post with theme or image
