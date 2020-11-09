@@ -7,6 +7,8 @@ export const FETCH_POSTS_QUERY = gql`
     body
     createdAt
     username
+    image
+    theme
     likeCount
       likes {
         username

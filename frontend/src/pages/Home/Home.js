@@ -30,10 +30,12 @@ const FETCH_POSTS_QUERY = gql`
     createdAt
     username
     likeCount
+    theme
+    image
       likes {
         username
       }
-      commentCount
+    commentCount
       comments {
         id
         username

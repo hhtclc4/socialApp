@@ -52,6 +52,7 @@ $concept-color: #1877f2;
                 position: absolute;
                 top: 5px;
                 right: 5px;
+                cursor: pointer;
                 border: 2px solid $border-color;
                 background-color: transparent;
                 padding: 7px 12px;
@@ -89,6 +90,7 @@ $concept-color: #1877f2;
         .post-cr-actions {
             .post-cr-add-theme {
                 .collapse-btn {
+                    cursor: pointer;
                     border: none;
                     border-radius: 5px;
                     padding: 0 10px;

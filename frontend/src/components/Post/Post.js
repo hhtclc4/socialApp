@@ -7,22 +7,35 @@ import { AuthContext } from '../../context/AuthUser';
 import gql from 'graphql-tag'
 import { FETCH_POSTS_QUERY } from '../../util/graphql'
 import { useMutation } from '@apollo/react-hooks'
+const ObjectId = require('mongodb').ObjectID
 export const Post = ({ body, createdAt, image, theme, username, id, likes, likeCount, comments, commentCount }) => {
     const user = useContext(AuthContext);
-
-    const [deletePost] = useMutation(DELETE_POST_MUTATION, {
-        update(proxy) {
-            const data = proxy.readQuery({
+    //console.log("type of id is ", typeof (id));
+    const [deletePostMutation] = useMutation(DELETE_POST_MUTATION, {
+        update(cache) {
+            const existedPosts = cache.readQuery({
                 query: FETCH_POSTS_QUERY
             });
-            data.getPosts = data.getPosts.filter((p) => p.id !== id);
-            proxy.writeQuery({ query: FETCH_POSTS_QUERY, data });
+            const newPosts = existedPosts.getPosts.filter(p => (p.id !== id))
+            cache.writeQuery({
+                query: FETCH_POSTS_QUERY,
+                data: { getPosts: newPosts }
+            })
         },
-        onError(err) {
-
+        onError(error) {
+            console.log(error);
         },
-        variables: id,
     })
+
+    const handleDelete = () => {
+        console.log(id);
+        const deletedId = ObjectId(id);
+        console.log(typeof (deletedId.id));
+        console.log(deletedId);
+        deletePostMutation({ variables: { postId: id } })
+    }
+
+
     return (
         <div className="post-container  d-flex flex-column my-3 p-2">
             <div className="post-header d-flex flex-row align-items-center">
@@ -33,7 +46,7 @@ export const Post = ({ body, createdAt, image, theme, username, id, likes, likeC
                 {
                     user && user.user.username === username &&
                     <div className="post-delete-btn flex-fill d-flex flex-row justify-content-end align-items-center">
-                        <span onClick={deletePost}><FontAwesomeIcon icon={faTrashAlt} size="2x" color="#cc0000" /></span>
+                        <span onClick={handleDelete}><FontAwesomeIcon icon={faTrashAlt} size="lg" color="#cc0000" /></span>
                     </div>
                 }
             </div>
@@ -77,6 +90,7 @@ export const Post = ({ body, createdAt, image, theme, username, id, likes, likeC
 const DELETE_POST_MUTATION = gql`
   mutation deletePost($postId: ID!) {
     deletePost(postId: $postId)
+    
   }
 `;
 

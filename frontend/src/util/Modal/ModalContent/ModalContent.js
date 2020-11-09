@@ -16,7 +16,7 @@ const ModalContent = ({ close, children }) => {
 
             className="modal-content-container p-3"
         >
-            <button className="modal-close-btn" onClick={close}><FontAwesomeIcon icon={faTimes} size="lg" /></button>
+            <div className="modal-close-btn" onClick={close}><FontAwesomeIcon icon={faTimes} size="lg" /></div>
             {children}
         </div>
     )

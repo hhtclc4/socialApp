@@ -61,8 +61,8 @@ module.exports = {
                 throw new Error('Post body must not be empty');
             }
 
-            if (image.trim() !== '' && theme > 0) {
-                throw new Error('Can not use image with theme')
+            if (image.trim() !== 'none' && theme > 0) {
+                throw new Error('Can not use image and theme in one post')
             }
             const newPost = new Post({
                 body,
@@ -73,9 +73,9 @@ module.exports = {
                 createdAt: new Date().toISOString()
             });
 
-            const post = await newPost.save();
+            const posts = await newPost.save();
 
-            return post;
+            return posts;
         },
 
         async deletePost(_, { postId }, context) {

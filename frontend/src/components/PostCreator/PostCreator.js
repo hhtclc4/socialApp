@@ -44,7 +44,11 @@ const PostCreator = ({ user }) => {
 
     const handleThemeChange = (theme, index) => {
         setSelectedTheme(theme)
-        setStates({ theme: index })
+        setStates({
+            body: states.body,
+            image: 'none',
+            theme: index
+        })
     }
     const upFileRef = useRef();
     const handleFileChange = (event) => {
@@ -64,36 +68,40 @@ const PostCreator = ({ user }) => {
     }
 
     const onChange = (event) => {
-        setStates({ ...states, [event.target.name]: event.target.value })
+        setStates({
+            body: event.target.value,
+            image: 'imageLink',
+            theme: -1,
+        })
+        console.log(states.body);
     }
 
 
     const [createPost, { error }] = useMutation(CREATE_POST_MUTATION, {
-        variables: states,
-        update(proxy, result) {
-            //proxy to make refresh get Posts
-            const data = proxy.readQuery({ query: FETCH_POSTS_QUERY });
-            let newData = [...data.getPosts];
-            newData = [result.data.createPost, ...newData];
-            proxy.writeQuery({
+        update(cache, result) {
+            //cache to make refresh get Posts
+            const existedPosts = cache.readQuery({ query: FETCH_POSTS_QUERY });
+            console.log(result.data.createPost);
+            const newPosts = existedPosts.getPosts.push(result.data.createPost)
+            cache.writeQuery({
                 query: FETCH_POSTS_QUERY,
                 data: {
-                    ...data,
-                    getPosts: {
-                        newData,
-                    },
-                },
-            });
+                    getPosts: newPosts
+                }
+            })
             states.body = '';
             states.image = 'none';
             states.theme = -1;
         },
-        onError(err) {
-
+        onError() {
+            console.log(error);
+        },
+        onCompleted() {
+            setOpen(false)
         }
     })
     const onSubmit = async (event) => {
-
+        event.preventDefault();
         // Get the timestamp in seconds
         // var timestamp = Math.round((new Date).getTime() / 1000);
 
@@ -117,21 +125,21 @@ const PostCreator = ({ user }) => {
 
 
         // take image publicId link
-        const formData = new FormData();
+        //const formData = new FormData();
 
-        formData.append('file', file);
-        formData.append('upload_preset', "defaultpreset");
-        // formData.append("api_key", "688812829718727")
-        // formData.append("api_secret", "B-BPLmYRO2jRM5f_V1dBW0zOZo4")
-        // formData.append("public_id", "samples")
-        // formData.append("timestamp", timestamp)
-        // formData.append("signature", signature)
+        // formData.append('file', file);
+        // formData.append('upload_preset', "defaultpreset");
+        // // formData.append("api_key", "688812829718727")
+        // // formData.append("api_secret", "B-BPLmYRO2jRM5f_V1dBW0zOZo4")
+        // // formData.append("public_id", "samples")
+        // // formData.append("timestamp", timestamp)
+        // // formData.append("signature", signature)
 
-        const response = await axios.post(
-            `http://api.cloudinary.com/v1_1/triha/image/upload`,
-            formData, {
-            headers: { "Content-Type": "multipart/form-data" }
-        });
+        // const response = await axios.post(
+        //     `http://api.cloudinary.com/v1_1/triha/image/upload`,
+        //     formData, {
+        //     headers: { "Content-Type": "multipart/form-data" }
+        // });
 
         // console.log(response);
         // Build the curl command
@@ -141,11 +149,10 @@ const PostCreator = ({ user }) => {
         // console.log(response);
         // //useMutation
         console.log(states);
-        //console.log(error);
-        createPost();
+        createPost({ variables: { body: states.body, image: states.image, theme: states.theme } });
+
         // console.log(error.graphQLErrors[0].message)
-        setOpen(false)
-        window.scrollTo(0, document.body.scrollHeight);
+        // window.scrollTo(0, document.body.scrollHeight);
     }
 
     return (
@@ -164,83 +171,94 @@ const PostCreator = ({ user }) => {
             {/**Modal */}
             <PostCreatorContext.Provider value={value}>
                 <Modal>
-                    <div className="post-cr-hear text-center">
-                        <h3>Create Post</h3>
-                    </div>
-                    <div className="post-cr-body">
-                        <div className="post-cr-user py-3">
-                            <img alt="user" src={UserLink} />
+                    <form noValidate onSubmit={onSubmit}>
+                        <div className="post-cr-hear text-center">
+                            <h3>Create Post</h3>
                         </div>
+                        <div className="post-cr-body">
+                            <div className="post-cr-user py-3">
+                                <img alt="user" src={UserLink} />
+                            </div>
 
-                        {/**TEXT AREA */}
-                        <div className="post-cr-text-editor">
-                            <TextArea
-                                style={theme ? {
-                                    backgroundImage: `url(${selectedTheme})`, textAlign: 'center', paddingTop: '25%',
-                                    color: selectedTheme === Theme5 ? '#fff' : null
-                                } : {}}
+                            {/**TEXT AREA */}
+                            <div className="post-cr-text-editor">
+                                <TextArea
+                                    style={theme ? {
+                                        backgroundImage: `url(${selectedTheme})`, textAlign: 'center', paddingTop: '25%',
+                                        color: selectedTheme === Theme5 ? '#fff' : null
+                                    } : {}}
 
-                                autoSize={{ minRows: 6, maxRows: 12 }}
-                                placeholder={placeholderUser}
-                                name="body"
-                                onChange={onChange}
-                            />
+                                    autoSize={{ minRows: 6, maxRows: 12 }}
+                                    placeholder={placeholderUser}
+                                    name="body"
+                                    onChange={onChange}
+                                    value={states.body}
+                                />
+                            </div>
+                            {/**END TEXT AREA */}
+
+                            {/**IMAGE SHOW*/}
+                            <div className="post-cr-img-show" style={file ? { border: '1px solid #d9d9d9', borderRadius: '5px' } : null}>
+                                <div className="img-close-btn"
+                                    onClick={removePickedImage}
+                                ><FontAwesomeIcon icon={faTimes} size="lg" /></div>
+                                {file ? <img alt="post" src={file} /> : null}
+                            </div>
+                            {/**END IMAGE SHOW */}
+
+                            <div className="post-cr-actions d-flex flex-grow py-2">
+
+                                {/**ADD THEME*/}
+                                {file ? null :
+                                    <div className="post-cr-add-theme d-flex flex-row" >
+                                        {theme ? <div className="collapse-btn" onClick={() => {
+                                            setTheme(false)
+                                            setStates({
+                                                body: states.body,
+                                                image: 'none',
+                                                theme: -1
+                                            })
+                                        }}>
+                                            <FontAwesomeIcon icon={faChevronLeft} color="gray" />
+                                        </div> :
+                                            <img src={ThemeLink} alt="theme-symbol" onClick={() => {
+                                                setTheme(true)
+                                                setStates({
+                                                    body: states.body,
+                                                    image: 'none',
+                                                    theme: 0
+                                                })
+                                            }} />}
+
+                                        {theme ? <div className="post-cr-themes-list d-flex flex-row">
+                                            {themeList.map((theme, index) =>
+                                                <div
+                                                    className="theme-thumb"
+                                                    onClick={() => handleThemeChange(theme, index)}
+                                                    alt="theme" key={index}
+                                                    style={{ backgroundImage: `url(${theme})` }}
+                                                ></div>
+                                            )}
+                                        </div> : null}
+                                    </div>}
+                                {/** END ADD THEME*/}
+
+                                {/** ADD IMAGE*/}
+                                {theme ? null :
+                                    <div className="post-cr-add-img ml-3">
+                                        <div>
+                                            <input className="d-none" ref={upFileRef} type="file" onChange={handleFileChange} />
+                                            <FontAwesomeIcon icon={faImage} size="2x" color="#999" onClick={(e) => upFileRef.current.click()} />
+                                        </div>
+                                    </div>}
+                                {/** END ADD IMAGE*/}
+                            </div>
                         </div>
-                        {/**END TEXT AREA */}
-
-                        {/**IMAGE SHOW*/}
-                        <div className="post-cr-img-show" style={file ? { border: '1px solid #d9d9d9', borderRadius: '5px' } : null}>
-                            <button className="img-close-btn"
-                                onClick={removePickedImage}
-                            ><FontAwesomeIcon icon={faTimes} size="lg" /></button>
-                            {file ? <img alt="post" src={file} /> : null}
+                        <div className="post-cr-footer pt-3">
+                            <button className="post-cr-post-btn px-3 py-2">Post</button>
                         </div>
-                        {/**END IMAGE SHOW */}
-
-                        <div className="post-cr-actions d-flex flex-grow py-2">
-
-                            {/**ADD THEME*/}
-                            {file ? null :
-                                <div className="post-cr-add-theme d-flex flex-row" >
-                                    {theme ? <button className="collapse-btn" onClick={() => {
-                                        setTheme(false)
-                                        setStates({ theme: -1 })
-                                    }}>
-                                        <FontAwesomeIcon icon={faChevronLeft} color="gray" />
-                                    </button> :
-                                        <img src={ThemeLink} alt="theme-symbol" onClick={() => {
-                                            setTheme(true)
-                                            setStates({ theme: 0 })
-                                        }} />}
-
-                                    {theme ? <div className="post-cr-themes-list d-flex flex-row">
-                                        {themeList.map((theme, index) =>
-                                            <div
-                                                className="theme-thumb"
-                                                onClick={() => handleThemeChange(theme, index)}
-                                                alt="theme" key={index}
-                                                style={{ backgroundImage: `url(${theme})` }}
-                                            ></div>
-                                        )}
-                                    </div> : null}
-                                </div>}
-                            {/** END ADD THEME*/}
-
-                            {/** ADD IMAGE*/}
-                            {theme ? null :
-                                <div className="post-cr-add-img ml-3">
-                                    <div>
-                                        <input className="d-none" ref={upFileRef} type="file" onChange={handleFileChange} />
-                                        <FontAwesomeIcon icon={faImage} size="2x" color="#999" onClick={(e) => upFileRef.current.click()} />
-                                    </div>
-                                </div>}
-                            {/** END ADD IMAGE*/}
-                        </div>
-                    </div>
-                    <div className="post-cr-footer pt-3">
-                        <button className="post-cr-post-btn px-3 py-2" onClick={onSubmit}>Post</button>
-                    </div>
-                    {error && error.graphQLErrors[0] && <ul><li>{error.graphQLErrors[0].message}</li></ul>}
+                        {error && error.graphQLErrors[0] && <ul><li>{error.graphQLErrors[0].message}</li></ul>}
+                    </form>
                 </Modal>
             </PostCreatorContext.Provider>
         </div>
@@ -262,6 +280,8 @@ const CREATE_POST_MUTATION = gql`
         body
         createdAt
         username
+        image
+        theme
         likes {
         id
         username
