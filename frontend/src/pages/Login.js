@@ -15,7 +15,7 @@ const Login = (props) => {
     const onChange = (event) => {
         setValues({ ...values, [event.target.name]: event.target.value })
     }
-    const [loginUser, { loading }] = useMutation(LOGIN_USER, {
+    const [loginUser] = useMutation(LOGIN_USER, {
         update(_, { data }) {
             console.log(data);
             context.login(data.login);

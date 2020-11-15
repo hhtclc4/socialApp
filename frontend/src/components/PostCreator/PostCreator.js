@@ -1,4 +1,4 @@
-import React, { useState, createContext, useRef, useEffect } from 'react'
+import React, { useState, createContext, useRef } from 'react'
 import './PostCreator.scss'
 import Modal from '../../util/Modal/Modal'
 import UserLink from "../../images/defaultava.png"
@@ -16,10 +16,10 @@ import { faImage } from '@fortawesome/free-regular-svg-icons'
 import gql from 'graphql-tag'
 import { FETCH_POSTS_QUERY } from '../../util/graphql'
 import axios from 'axios';
-const cloudinary = require('cloudinary/lib/cloudinary');
 
 
-const { CLOUD_NAME } = require('../../clould.js')
+
+const { CLOUD_NAME, UPLOAD_PRESET } = require('../../clould.js')
 const { TextArea } = Input;
 export const PostCreatorContext = createContext({
     open: false,
@@ -61,6 +61,7 @@ const PostCreator = ({ user }) => {
 
             //To reset file input
             event.target.value = null;
+            console.log("file changed");
         }
     }
     const removePickedImage = () => {
@@ -70,10 +71,10 @@ const PostCreator = ({ user }) => {
     const onChange = (event) => {
         setStates({
             body: event.target.value,
-            image: 'imageLink',
-            theme: -1,
+            image: states.image,
+            theme: states.theme,
         })
-        console.log(states.body);
+        console.log(states);
     }
 
 
@@ -81,77 +82,60 @@ const PostCreator = ({ user }) => {
         update(cache, result) {
             //cache to make refresh get Posts
             const existedPosts = cache.readQuery({ query: FETCH_POSTS_QUERY });
-            console.log(result.data.createPost);
-            const newPosts = existedPosts.getPosts.push(result.data.createPost)
+            const newPosts = existedPosts.getPosts.concat(result.data.createPost)
             cache.writeQuery({
                 query: FETCH_POSTS_QUERY,
                 data: {
                     getPosts: newPosts
                 }
             })
-            states.body = '';
-            states.image = 'none';
-            states.theme = -1;
+            setStates({
+                body: '',
+                image: 'none',
+                theme: -1
+            })
         },
-        onError() {
-            console.log(error);
+        onError(err) {
+            console.log(err);
         },
         onCompleted() {
+
             setOpen(false)
         }
     })
+
+    async function generateImgURL() {
+        try {
+            if (states.theme === -1) {
+                const formData = new FormData();
+
+                formData.append('file', file);
+                formData.append('upload_preset', UPLOAD_PRESET);
+
+                const response = await axios.post(
+                    `http://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+                    formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+                return response.data.url;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+
+        return 'none';
+    }
     const onSubmit = async (event) => {
         event.preventDefault();
-        // Get the timestamp in seconds
-        // var timestamp = Math.round((new Date).getTime() / 1000);
+        const imgLink = await generateImgURL();
+        console.log("imgLink", imgLink);
+        states.image = imgLink;
+        setStates({
+            body: states.body,
+            image: imgLink,
+            theme: -1,
+        }, createPost({ variables: { body: states.body, image: states.image, theme: states.theme } }))
 
-        // // Show the timestamp
-        // console.log('Timestamp:', timestamp);
-
-        // // Get the signature using the Node.js SDK method api_sign_request
-        // var signature = cloudinary.utils.api_sign_request({
-        //     timestamp: timestamp,
-        //     public_id: 'samples'
-        // }, "B-BPLmYRO2jRM5f_V1dBW0zOZo4");
-
-        // Show the signature
-        // console.log('Signature:', signature);
-
-        // ====================================================================================================
-
-        // Having got the timestamp and signature of the parameters to sign, we can now build the curl command.  
-
-        // URL of the file to upload
-
-
-        // take image publicId link
-        //const formData = new FormData();
-
-        // formData.append('file', file);
-        // formData.append('upload_preset', "defaultpreset");
-        // // formData.append("api_key", "688812829718727")
-        // // formData.append("api_secret", "B-BPLmYRO2jRM5f_V1dBW0zOZo4")
-        // // formData.append("public_id", "samples")
-        // // formData.append("timestamp", timestamp)
-        // // formData.append("signature", signature)
-
-        // const response = await axios.post(
-        //     `http://api.cloudinary.com/v1_1/triha/image/upload`,
-        //     formData, {
-        //     headers: { "Content-Type": "multipart/form-data" }
-        // });
-
-        // console.log(response);
-        // Build the curl command
-        // Show the curl command
-        //console.log(curl_command);
-        // // createPost();
-        // console.log(response);
-        // //useMutation
-        console.log(states);
-        createPost({ variables: { body: states.body, image: states.image, theme: states.theme } });
-
-        // console.log(error.graphQLErrors[0].message)
         // window.scrollTo(0, document.body.scrollHeight);
     }
 
@@ -213,6 +197,7 @@ const PostCreator = ({ user }) => {
                                     <div className="post-cr-add-theme d-flex flex-row" >
                                         {theme ? <div className="collapse-btn" onClick={() => {
                                             setTheme(false)
+                                            // console.log(states.body);
                                             setStates({
                                                 body: states.body,
                                                 image: 'none',
@@ -223,6 +208,7 @@ const PostCreator = ({ user }) => {
                                         </div> :
                                             <img src={ThemeLink} alt="theme-symbol" onClick={() => {
                                                 setTheme(true)
+                                                // console.log(states.body);
                                                 setStates({
                                                     body: states.body,
                                                     image: 'none',
@@ -255,7 +241,7 @@ const PostCreator = ({ user }) => {
                             </div>
                         </div>
                         <div className="post-cr-footer pt-3">
-                            <button className="post-cr-post-btn px-3 py-2">Post</button>
+                            <button className="post-cr-post-btn px-3 py-2" type="submit">Post</button>
                         </div>
                         {error && error.graphQLErrors[0] && <ul><li>{error.graphQLErrors[0].message}</li></ul>}
                     </form>

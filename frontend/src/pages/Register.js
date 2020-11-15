@@ -15,7 +15,7 @@ const Register = (props) => {
     const onChange = (event) => {
         setValues({ ...values, [event.target.name]: event.target.value })
     }
-    const [addUser, { loading }] = useMutation(REGISTER_USER, {
+    const [addUser] = useMutation(REGISTER_USER, {
         update(_, result) {
             console.log(result);
             props.history.push('/')

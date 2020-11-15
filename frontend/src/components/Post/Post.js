@@ -7,7 +7,12 @@ import { AuthContext } from '../../context/AuthUser';
 import gql from 'graphql-tag'
 import { FETCH_POSTS_QUERY } from '../../util/graphql'
 import { useMutation } from '@apollo/react-hooks'
-const ObjectId = require('mongodb').ObjectID
+import Theme1 from '../../images/Themes/Theme1.png';
+import Theme2 from '../../images/Themes/Theme2.png';
+import Theme3 from '../../images/Themes/Theme3.png';
+import Theme4 from '../../images/Themes/Theme4.png';
+import Theme5 from '../../images/Themes/Theme5.png';
+
 export const Post = ({ body, createdAt, image, theme, username, id, likes, likeCount, comments, commentCount }) => {
     const user = useContext(AuthContext);
     //console.log("type of id is ", typeof (id));
@@ -28,14 +33,10 @@ export const Post = ({ body, createdAt, image, theme, username, id, likes, likeC
     })
 
     const handleDelete = () => {
-        console.log(id);
-        const deletedId = ObjectId(id);
-        console.log(typeof (deletedId.id));
-        console.log(deletedId);
         deletePostMutation({ variables: { postId: id } })
     }
 
-
+    const themeList = [Theme1, Theme2, Theme3, Theme4, Theme5];
     return (
         <div className="post-container  d-flex flex-column my-3 p-2">
             <div className="post-header d-flex flex-row align-items-center">
@@ -50,11 +51,31 @@ export const Post = ({ body, createdAt, image, theme, username, id, likes, likeC
                     </div>
                 }
             </div>
-            <div className="post-body flex-fill">
-                <div className="post-body-content">{body}</div>
+            <div className="post-body flex-fill py-2">
+                <div className="post-body-content"
+                    style={theme > 0 ? {
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%,-50%)',
+                        fontWeight: 'bold',
+                        fontSize: '24px'
+                    } : {}}
+                >{body}</div>
 
-                <div className="post-body-bg">
-                </div>
+                {theme > 0 &&
+                    <div className="post-body-bg" style={{ backgroundImage: `url(${themeList[theme]})` }}>
+                    </div>
+
+                }
+                {image !== 'none' &&
+                    <div className="post-body-image"
+                        style={{ backgroundImage: `url(${image})` }}
+                    >
+                        <img alt="added" src={image} className="added-photo" />
+                    </div>
+                }
+
             </div>
             <div className="post-footer">
                 <div className="post-like-comment d-flex flex-row justify-content-between py-1">

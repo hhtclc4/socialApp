@@ -22,11 +22,24 @@ $border-color: #d9d9d9;
         }
     }
     .post-body {
+        position: relative;
         .post-title {
         }
         .post-body-bg {
+            height: 300px;
         }
         .post-body-content {
+        }
+
+        .post-body-image {
+            background-repeat: no-repeat;
+            width: 100%;
+            height: fit-content;
+            background-position: center;
+
+            .added-photo {
+                visibility: hidden;
+            }
         }
     }
     .post-footer {
