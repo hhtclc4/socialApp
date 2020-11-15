@@ -65,11 +65,11 @@ module.exports = {
                 throw new Error('Can not use image and theme in one post')
             }
             const newPost = new Post({
-                body,
+                body: body,
                 user: user.id,
                 username: user.username,
-                image,
-                theme,
+                image: image,
+                theme: theme,
                 createdAt: new Date().toISOString()
             });
 
